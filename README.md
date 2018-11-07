@@ -1,6 +1,6 @@
 # kubesim_nats
 
-KUDEDGE Platform 5G NR Simulator
+KUDEDGE Platform Simulator leveraging NATS messaging [Here](https://nats.io/).
 
 ## KUBEDGE Platform
 
