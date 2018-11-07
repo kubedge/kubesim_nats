@@ -21,11 +21,11 @@ spec:
     spec:
       containers:
       - name: nats-streaming
-        image: {{ .Values.image }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+        imagePullPolicy: "{{ .Values.server.image.pullPolicy }}"
         args:
-          - /opt/nats-streaming-server
-          - -m=8222
+        #  - /nats-streaming-server
+        #  - -m=8222
           - -st=FILE
           - --dir=/nats-datastore
           - -ft_group=ft
