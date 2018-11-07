@@ -12,11 +12,12 @@ jobs:
   include:
     - stage: build pub docker image
       script:
-      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
+      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-arm32v7
       - export VERSION=0.1.0
       - cd kubesim_nats_pub
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o stan-pub .
+      - CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o stan-pub .
       - cd ..
+      - docker run --rm --privileged multiarch/qemu-user-static:register --reset
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats_pub/Dockerfile .
       - docker images
@@ -25,11 +26,12 @@ jobs:
       - docker push $DHUBREPO
     - stage: build sub docker image
       script:
-      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-dev
+      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-arm32v7
       - export VERSION=0.1.0
       - cd kubesim_nats_sub
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o stan-sub .
+      - CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o stan-sub .
       - cd ..
+      - docker run --rm --privileged multiarch/qemu-user-static:register --reset
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats_sub/Dockerfile .
       - docker images
@@ -38,7 +40,8 @@ jobs:
       - docker push $DHUBREPO
     - stage: test
       script:
-      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
+      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-arm32v7
       - export VERSION=0.1.0
+      - docker run --rm --privileged multiarch/qemu-user-static:register --reset
       - docker run -d -p 127.0.0.1:8080:80 --name hello $DHUBREPO:$VERSION
       - docker ps | grep -q hello
