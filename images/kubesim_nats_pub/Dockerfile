@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM scratch
-ADD kubesim_nats/ca-certificates.crt /etc/ssl/certs/
-ADD kubesim_nats/goclient /goclient
+ADD kubesim_nats_pub/ca-certificates.crt /etc/ssl/certs/
+ADD kubesim_nats_pub/stan-pub /stan-pub
 EXPOSE 8080
-CMD ["/goclient", "network", "Bluetooth"]
+CMD ["/stan-pub", "subject", "message"]

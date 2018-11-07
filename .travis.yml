@@ -10,23 +10,35 @@ service:
 
 jobs:
   include:
-    - stage: build docker image
+    - stage: build pub docker image
       script:
-      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats-dev
+      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
       - export VERSION=0.1.0
-      - cd kubesim_nats
+      - cd kubesim_nats_pub
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o goclient .
       - cd ..
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats/Dockerfile .
+      - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats_pub/Dockerfile .
+      - docker images
+      - docker tag $DHUBREPO:$VERSION $DHUBREPO:latest
+      - docker tag $DHUBREPO:$VERSION $DHUBREPO:travis-$TRAVIS_BUILD_NUMBER
+      - docker push $DHUBREPO
+    - stage: build sub docker image
+      script:
+      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-dev
+      - export VERSION=0.1.0
+      - cd kubesim_nats_sub
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o goclient .
+      - cd ..
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats_sub/Dockerfile .
       - docker images
       - docker tag $DHUBREPO:$VERSION $DHUBREPO:latest
       - docker tag $DHUBREPO:$VERSION $DHUBREPO:travis-$TRAVIS_BUILD_NUMBER
       - docker push $DHUBREPO
     - stage: test
       script:
-      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats-dev
+      - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
       - export VERSION=0.1.0
       - docker run -d -p 127.0.0.1:8080:80 --name hello $DHUBREPO:$VERSION
       - docker ps | grep -q hello
-      # - curl -vsf 'http://127.0.0.1:8080/index.html' &> /dev/stdout
