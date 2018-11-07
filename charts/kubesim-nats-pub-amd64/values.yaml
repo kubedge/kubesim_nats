@@ -20,10 +20,10 @@ nameOverride: kubesim-nats-pub
 nodeSelector:
   kubedgeNodeType: 5g-ran
 image:
-  repository: hack4easy/kubesim_nats_pub-arm32v7
+  repository: hack4easy/kubesim_nats_pub-amd64
   tag: latest
   pullPolicy: Always
-  healthRepository: hack4easy/kubesim_health-arm32v7
+  healthRepository: hack4easy/kubesim_health-amd64
   healthTag: latest
 service:
   name: kubesim-nats-pub
