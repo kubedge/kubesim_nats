@@ -15,7 +15,7 @@ jobs:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
       - export VERSION=0.1.0
       - cd kubesim_nats_pub
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o stan-pub .
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-pub .
       - cd ..
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats_pub/Dockerfile .
@@ -28,7 +28,7 @@ jobs:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-dev
       - export VERSION=0.1.0
       - cd kubesim_nats_sub
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o stan-sub .
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-sub .
       - cd ..
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker build -t $DHUBREPO:$VERSION -f images/kubesim_nats_sub/Dockerfile .
