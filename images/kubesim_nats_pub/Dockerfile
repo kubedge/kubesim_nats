@@ -14,6 +14,5 @@
 
 FROM scratch
 ADD kubesim_nats_pub/ca-certificates.crt /etc/ssl/certs/
-ADD kubesim_nats_pub/stan-pub /stan-pub
-EXPOSE 8080
-CMD ["/stan-pub", "subject", "message"]
+ADD kubesim_nats_pub/nats-pub /nats-pub
+CMD ["/nats-pub", "-s", "nats://my-user:T0pS3cr3t@nats-cluster.nats-io.svc.cluster.local:4222", "dockerfile-hardcoded-subject", "dockerfile-hardcoded-message"]

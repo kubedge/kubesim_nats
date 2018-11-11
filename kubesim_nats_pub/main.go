@@ -1,4 +1,4 @@
-// Copyright 2016-2018 The NATS Authors
+// Copyright 2012-2018 The NATS Authors
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,104 +15,63 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"github.com/nats-io/go-nats"
 	"log"
-	"os"
-	"sync"
 	"time"
-
-	"github.com/nats-io/go-nats-streaming"
 )
 
-var usageStr = `
-Usage: stan-pub [options] <subject> <message>
+// NOTE: Can test with demo servers.
+// nats-pub -s demo.nats.io <subject> <msg>
+// nats-pub -s demo.nats.io:4443 <subject> <msg> (TLS version)
 
-Options:
-	-s, --server   <url>            NATS Streaming server URL(s)
-	-c, --cluster  <cluster name>   NATS Streaming cluster name
-	-id,--clientid <client ID>      NATS Streaming client ID
-	-a, --async                     Asynchronous publish mode
-`
-
-// NOTE: Use tls scheme for TLS, e.g. stan-pub -s tls://demo.nats.io:4443 foo hello
 func usage() {
-	fmt.Printf("%s\n", usageStr)
-	os.Exit(0)
+	log.Fatalf("Usage: nats-pub [-s server] <subject> <msg>")
 }
 
 func main() {
-	var clusterID string
-	var clientID string
-	var async bool
-	var URL string
-
-	flag.StringVar(&URL, "s", stan.DefaultNatsURL, "The nats server URLs (separated by comma)")
-	flag.StringVar(&URL, "server", stan.DefaultNatsURL, "The nats server URLs (separated by comma)")
-	flag.StringVar(&clusterID, "c", "test-cluster", "The NATS Streaming cluster ID")
-	flag.StringVar(&clusterID, "cluster", "test-cluster", "The NATS Streaming cluster ID")
-	flag.StringVar(&clientID, "id", "stan-pub", "The NATS Streaming client ID to connect with")
-	flag.StringVar(&clientID, "clientid", "stan-pub", "The NATS Streaming client ID to connect with")
-	flag.BoolVar(&async, "a", false, "Publish asynchronously")
-	flag.BoolVar(&async, "async", false, "Publish asynchronously")
+	var urls = flag.String("s", nats.DefaultURL, "The nats server URLs (separated by comma)")
+	var nkeyFile = flag.String("nkey", "", "Use the nkey seed file for authentication")
 
 	log.SetFlags(0)
 	flag.Usage = usage
 	flag.Parse()
 
 	args := flag.Args()
-
-	if len(args) < 1 {
+	if len(args) != 2 {
 		usage()
 	}
 
-	sc, err := stan.Connect(clusterID, clientID, stan.NatsURL(URL))
-	if err != nil {
-		log.Fatalf("Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, URL)
+	// Connect Options.
+	opts := []nats.Option{nats.Name("NATS Sample Publisher")}
+
+	// Use Nkey authentication.
+	if *nkeyFile != "" {
+		opt, err := nats.NkeyOptionFromSeed(*nkeyFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		opts = append(opts, opt)
 	}
-	defer sc.Close()
+
+	// Connect to NATS
+	nc, err := nats.Connect(*urls, opts...)
+	if err != nil {
+		log.Fatalf("Can't connect: %v.\nMake sure a NATS Server is running at: %s", err, *urls)
+	}
+	defer nc.Close()
 
 	subj, msg := args[0], []byte(args[1])
 
-	ch := make(chan bool)
-	var glock sync.Mutex
-	var guid string
-	acb := func(lguid string, err error) {
-		glock.Lock()
-		log.Printf("Received ACK for guid %s\n", lguid)
-		defer glock.Unlock()
-		if err != nil {
-			log.Fatalf("Error in server ack for guid %s: %v\n", lguid, err)
-		}
-		if lguid != guid {
-			log.Fatalf("Expected a matching guid in ack callback, got %s vs %s\n", lguid, guid)
-		}
-		ch <- true
-	}
+	for {
+		nc.Publish(subj, msg)
+		nc.Flush()
 
-	if !async {
-		err = sc.Publish(subj, msg)
-		if err != nil {
-			log.Fatalf("Error during publish: %v\n", err)
-		}
-		log.Printf("Published [%s] : '%s'\n", subj, msg)
-	} else {
-		glock.Lock()
-		guid, err = sc.PublishAsync(subj, msg, acb)
-		if err != nil {
-			log.Fatalf("Error during async publish: %v\n", err)
-		}
-		glock.Unlock()
-		if guid == "" {
-			log.Fatal("Expected non-empty guid to be returned.")
-		}
-		log.Printf("Published [%s] : '%s' [guid: %s]\n", subj, msg, guid)
-
-		select {
-		case <-ch:
-			break
-		case <-time.After(5 * time.Second):
-			log.Fatal("timeout")
+		if err := nc.LastError(); err != nil {
+			log.Fatal(err)
+		} else {
+			log.Printf("Published [%s] : '%s'\n", subj, msg)
 		}
 
+		time.Sleep(15 * time.Second) //every 15 seconds
 	}
 }

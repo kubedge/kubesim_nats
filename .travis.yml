@@ -15,7 +15,7 @@ jobs:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-arm32v7
       - export VERSION=0.1.0
       - cd kubesim_nats_pub
-      - CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o stan-pub .
+      - CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o nats-pub .
       - cd ..
       - docker run --rm --privileged multiarch/qemu-user-static:register --reset
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
@@ -29,7 +29,7 @@ jobs:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-arm32v7
       - export VERSION=0.1.0
       - cd kubesim_nats_sub
-      - CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o stan-sub .
+      - CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o nats-sub .
       - cd ..
       - docker run --rm --privileged multiarch/qemu-user-static:register --reset
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
