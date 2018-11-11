@@ -9,8 +9,8 @@ export DOCKER_PASSWORD=$KUBEDGEDEVOPSPWD
 cp $HOME/bin/nats-operator .
 
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-docker build -t $DHUBREPO:v$VERSION -f Dockerfile .
+docker build -t $DHUBREPO:$VERSION -f Dockerfile .
 
-docker tag $DHUBREPO:v$VERSION $DHUBREPO:latest
-docker tag $DHUBREPO:v$VERSION $DHUBREPO:from-master-pi
+docker tag $DHUBREPO:$VERSION $DHUBREPO:latest
+docker tag $DHUBREPO:$VERSION $DHUBREPO:from-master-pi
 docker push $DHUBREPO
