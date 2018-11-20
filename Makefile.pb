@@ -25,7 +25,7 @@ DHUBREPO         = ${DOCKER_NAMESPACE}/${IMAGE_NAME}
 all: simulator
 
 simulator: kubesim_nats/main.go
-	cd kubesim_nats && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o goclient-${CURRENT_BRANCH} .
+	cd kubesim_nats && CGO_ENABLED=0 GOOS=linux GOARM=7 GOARCH=arm go build -a -installsuffix cgo -o goclient-${CURRENT_BRANCH} .
 
 clean: kubesim_nats/goclient-${CURRENT_BRANCH}
 	cd kubesim_nats && rm -f goclient-${CURRENT_BRANCH}
