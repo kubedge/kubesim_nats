@@ -21,13 +21,16 @@ metadata:
 data:
   config: |-
     ---
-    product_name: nr
-    product_type: 5g
-    product_family: ran
+    product_name: nats-pub
+    product_type: kubedge
+    product_family: nats
     product_release: test
+    kubedge_server_port: ":50051"
+    kubedge_server_address: "192.168.2.101:30180"
     feature_set1:
     - one
     - two
     feature_set2:
     - alpha
     - beta
+    enable_log: {{ .Values.enable_log }}
