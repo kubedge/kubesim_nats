@@ -1,4 +1,4 @@
-module github.com/kubedge/kubesim_nats
+module github.com/kubedge/kubesim_nats/kubesim_nats_pub
 
 go 1.15
 

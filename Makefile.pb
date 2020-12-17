@@ -22,10 +22,14 @@ DHUBREPO         = ${DOCKER_NAMESPACE}/${IMAGE_NAME}
 
 .PHONY: all
 
-all: simulator
+all: pub sub
 
-simulator: kubesim_nats/main.go
-	cd kubesim_nats && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o goclient-${CURRENT_BRANCH} .
+pub: kubesim_nats_pub/main.go
+	cd kubesim_nats_pub && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-pub .
 
-clean: kubesim_nats/goclient-${CURRENT_BRANCH}
-	cd kubesim_nats && rm -f goclient-${CURRENT_BRANCH}
+sub: kubesim_nats_sub/main.go
+	cd kubesim_nats_sub && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-sub .
+
+clean: kubesim_nats_pub/nats-pub
+	cd kubesim_nats_pub && rm -f nats-pub
+	cd kubesim_nats_sub && rm -f nats-sub

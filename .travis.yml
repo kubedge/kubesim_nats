@@ -3,7 +3,7 @@ sudo: true
 language: go
 
 go:
-  - "1.12.x"
+  - "1.15.x"
 
 service:
   - docker
@@ -18,7 +18,7 @@ jobs:
     - stage: build pub docker image
       script:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
-      - export VERSION=0.1.9
+      - export VERSION=0.1.19
       - cd kubesim_nats_pub
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-pub .
       - cd ..
@@ -31,7 +31,7 @@ jobs:
     - stage: build sub docker image
       script:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-dev
-      - export VERSION=0.1.9
+      - export VERSION=0.1.19
       - cd kubesim_nats_sub
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-sub .
       - cd ..
