@@ -1,6 +1,6 @@
 module github.com/kubedge/kubesim_nats
 
-go 1.12
+go 1.15
 
 require (
 	github.com/golang/protobuf v1.3.2 // indirect
