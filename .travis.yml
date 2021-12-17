@@ -3,10 +3,16 @@ sudo: true
 language: go
 
 go:
-  - "1.15.x"
+  - "1.17.x"
 
-service:
+services:
   - docker
+
+os:
+  - linux
+
+dist:
+  - focal
 
 env:
   - GO111MODULE=on
@@ -18,7 +24,7 @@ jobs:
     - stage: build pub docker image
       script:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
-      - export VERSION=0.1.19
+      - export VERSION=0.1.23
       - cd kubesim_nats_pub
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-pub .
       - cd ..
@@ -27,11 +33,11 @@ jobs:
       - docker images
       - docker tag $DHUBREPO:$VERSION $DHUBREPO:latest
       - docker tag $DHUBREPO:$VERSION $DHUBREPO:travis-$TRAVIS_BUILD_NUMBER
-      - docker push $DHUBREPO
+      - docker push $DHUBREPO -a
     - stage: build sub docker image
       script:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_sub-dev
-      - export VERSION=0.1.19
+      - export VERSION=0.1.23
       - cd kubesim_nats_sub
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o nats-sub .
       - cd ..
@@ -40,10 +46,10 @@ jobs:
       - docker images
       - docker tag $DHUBREPO:$VERSION $DHUBREPO:latest
       - docker tag $DHUBREPO:$VERSION $DHUBREPO:travis-$TRAVIS_BUILD_NUMBER
-      - docker push $DHUBREPO
+      - docker push $DHUBREPO -a
     - stage: test
       script:
       - export DHUBREPO=$DOCKER_NAMESPACE/kubesim_nats_pub-dev
-      - export VERSION=0.1.9
+      - export VERSION=0.1.23
       - docker run -d -p 127.0.0.1:8080:80 --name hello $DHUBREPO:$VERSION
       - docker ps | grep -q hello
