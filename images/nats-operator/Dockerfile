@@ -1,4 +1,4 @@
-FROM        arm32v6/alpine:3.8
+FROM        arm32v6/alpine:3.15
 
 COPY nats-operator /nats-operator
 
