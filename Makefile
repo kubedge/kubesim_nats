@@ -3,19 +3,23 @@
 SUB_COMPONENT        ?= kubesim_nats_sub
 PUB_COMPONENT        ?= kubesim_nats_pub
 VERSION_V1           ?= 0.2.24
+SUB_DHUBREPO         ?= kubedge1/${SUB_COMPONENT}
 SUB_DHUBREPO_DEV     ?= kubedge1/${SUB_COMPONENT}-dev
 SUB_DHUBREPO_AMD64   ?= kubedge1/${SUB_COMPONENT}-amd64
 SUB_DHUBREPO_ARM32V7 ?= kubedge1/${SUB_COMPONENT}-arm32v7
 SUB_DHUBREPO_ARM64V8 ?= kubedge1/${SUB_COMPONENT}-arm64v8
+PUB_DHUBREPO         ?= kubedge1/${PUB_COMPONENT}
 PUB_DHUBREPO_DEV     ?= kubedge1/${PUB_COMPONENT}-dev
 PUB_DHUBREPO_AMD64   ?= kubedge1/${PUB_COMPONENT}-amd64
 PUB_DHUBREPO_ARM32V7 ?= kubedge1/${PUB_COMPONENT}-arm32v7
 PUB_DHUBREPO_ARM64V8 ?= kubedge1/${PUB_COMPONENT}-arm64v8
 DOCKER_NAMESPACE     ?= kubedge1
+SUB_IMG              ?= ${SUB_DHUBREPO}:v${VERSION_V1}
 SUB_IMG_DEV          ?= ${SUB_DHUBREPO_DEV}:v${VERSION_V1}
 SUB_IMG_AMD64        ?= ${SUB_DHUBREPO_AMD64}:v${VERSION_V1}
 SUB_IMG_ARM32V7      ?= ${SUB_DHUBREPO_ARM32V7}:v${VERSION_V1}
 SUB_IMG_ARM64V8      ?= ${SUB_DHUBREPO_ARM64V8}:v${VERSION_V1}
+PUB_IMG              ?= ${PUB_DHUBREPO}:v${VERSION_V1}
 PUB_IMG_DEV          ?= ${PUB_DHUBREPO_DEV}:v${VERSION_V1}
 PUB_IMG_AMD64        ?= ${PUB_DHUBREPO_AMD64}:v${VERSION_V1}
 PUB_IMG_ARM32V7      ?= ${PUB_DHUBREPO_ARM32V7}:v${VERSION_V1}
@@ -114,12 +118,25 @@ SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
 PLATFORMS ?= linux/arm64,linux/amd64,linux/arm/v7
-.PHONY: docker-buildx
-docker-buildx: ## Build and push docker image for the manager for cross-platform support
+.PHONY: docker-sub-buildx
+docker-sub-buildx: ## Build and push docker image for the manager for cross-platform support
 	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
-	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' build/Dockerfile.buildkit > Dockerfile.cross
+	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' build/Dockerfile.buildkit.kubesim-nats-sub > Dockerfile.cross
 	- $(CONTAINER_TOOL) buildx create --name project-v3-builder
 	$(CONTAINER_TOOL) buildx use project-v3-builder
-	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} --tag ${DHUBREPO}:latest -f Dockerfile.cross .
+	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${SUB_IMG} --tag ${SUB_DHUBREPO}:latest -f Dockerfile.cross .
 	- $(CONTAINER_TOOL) buildx rm project-v3-builder
 	rm Dockerfile.cross
+
+.PHONY: docker-pub-buildx
+docker-pub-buildx: ## Build and push docker image for the manager for cross-platform support
+	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
+	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' build/Dockerfile.buildkit.kubesim-nats-pub > Dockerfile.cross
+	- $(CONTAINER_TOOL) buildx create --name project-v3-builder
+	$(CONTAINER_TOOL) buildx use project-v3-builder
+	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${PUB_IMG} --tag ${PUB_DHUBREPO}:latest -f Dockerfile.cross .
+	- $(CONTAINER_TOOL) buildx rm project-v3-builder
+	rm Dockerfile.cross
+
+# Cross compilation
+docker-buildx: fmt vet-v1 docker-sub-buildx docker-pub-buildx
